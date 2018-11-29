@@ -12,7 +12,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SwissBank.Data;
-using SwissBank.Data.Migrations;
 
 namespace SwissBank
 {
@@ -45,6 +44,13 @@ namespace SwissBank
             {
                 app.UseHsts();
             }
+
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                var context = serviceScope.ServiceProvider.GetRequiredService<SwissBankDbContext>();
+                context.Database.Migrate();
+            }
+
 
             app.UseHttpsRedirection();
             app.UseMvc();

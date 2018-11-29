@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using SwissBank.Data.Models;
 
-namespace SwissBank.Data.Migrations
+namespace SwissBank.Data
 {
     [DbContext(typeof(SwissBankDbContext))]
     partial class SwissBankDbContext : DbContext
