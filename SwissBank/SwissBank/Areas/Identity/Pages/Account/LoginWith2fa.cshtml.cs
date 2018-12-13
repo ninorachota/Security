@@ -52,7 +52,7 @@ namespace SwissBank.Areas.Identity.Pages.Account
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync(bool rememberMe, string returnUrl = null)
+        public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             if (!ModelState.IsValid)
             {
@@ -69,7 +69,7 @@ namespace SwissBank.Areas.Identity.Pages.Account
 
             var authenticatorCode = Input.TwoFactorCode.Replace(" ", string.Empty).Replace("-", string.Empty);
 
-            var result = await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, rememberMe, false);
+            var result = await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, true, true);
 
             if (result.Succeeded)
             {
