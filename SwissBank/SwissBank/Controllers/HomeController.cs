@@ -1,59 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal;
 using Microsoft.AspNetCore.Mvc;
-using SwissBank.Data.Models;
+using SwissBank.Data;
+using SwissBank.Models;
+using SwissBank.Services;
 
 namespace SwissBank.Controllers
 {
-    [Route("[controller]")]
-    [ApiController]
-    public class HomeController : ControllerBase
+    [Authorize]
+    public class HomeController : Controller
     {
-        private readonly FileReader _fileReader;
+        private readonly UserService _userService;
+        private readonly ApplicationDbContext _context;
 
-        public HomeController()
+        public HomeController(UserService userService, ApplicationDbContext context)
         {
-            _fileReader = new FileReader();
+            _userService = userService;
+            _context = context;
         }
 
-        // GET: api/Views
-        [HttpGet]
-        [Produces("text/html")]
-        public ContentResult Get()
+        public IActionResult Index()
         {
-            return _fileReader.ReadHtml("/wwwroot/index.html");
+            return View(_userService.GetCurrentIdentityUser().Result);
         }
 
-        // GET: api/Views/5
-        [HttpGet("{id}", Name = "Home")]
-        public string Get(int id)
+        public IActionResult ConfirmEmail()
         {
-            return "value";
+            return View();
         }
 
-        // POST: api/Views
-        [HttpPost]
-        public void Post(string identity, string password)
+        public IActionResult Contact()
         {
-            string k =  identity + password;
+            ViewData["Message"] = "Your contact page.";
+
+            return View();
         }
 
-        // PUT: api/Views/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public IActionResult Privacy()
         {
+            return View();
         }
 
-        // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
         {
+            return View(new ErrorViewModel {RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier});
         }
     }
 }
