@@ -16,7 +16,7 @@ namespace SwissBank.Data.Models
         public DateTime DateTime { get; set; }
         public User Sender { get; set; }
         [Required]
-        public User Reseaver { get; set; }
+        public User Receiver { get; set; }
 
         [NotMapped]
         [Required]

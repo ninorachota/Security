@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using SwissBank.Services;
 
 namespace SwissBank.Areas.Identity.Pages.Account
 {
@@ -15,11 +16,13 @@ namespace SwissBank.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<LogoutModel> _logger;
+        private readonly LoggerService _loggerService;
 
-        public LogoutModel(SignInManager<IdentityUser> signInManager, ILogger<LogoutModel> logger)
+        public LogoutModel(SignInManager<IdentityUser> signInManager, ILogger<LogoutModel> logger, LoggerService loggerService)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _loggerService = loggerService;
         }
 
         public void OnGet()
@@ -28,6 +31,7 @@ namespace SwissBank.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPost(string returnUrl = null)
         {
+            _loggerService.Add("User logged out.");
             await _signInManager.SignOutAsync();
             _logger.LogInformation("User logged out.");
             if (returnUrl != null)

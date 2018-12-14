@@ -26,7 +26,7 @@ namespace SwissBank.Controllers
 
         public IActionResult Index()
         {
-            return View(_userService.GetCurrentIdentityUser().Result);
+            return View(_userService.GetCurrentIdentityUser());
         }
 
         public IActionResult ConfirmEmail()

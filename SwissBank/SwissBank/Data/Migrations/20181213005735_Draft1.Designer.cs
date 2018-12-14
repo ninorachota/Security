@@ -298,7 +298,7 @@ namespace SwissBank.Data.Migrations
 
             modelBuilder.Entity("SwissBank.Data.Models.Transactions", b =>
                 {
-                    b.HasOne("SwissBank.Data.Models.User", "Reseaver")
+                    b.HasOne("SwissBank.Data.Models.User", "Receiver")
                         .WithMany()
                         .HasForeignKey("ReseaverId");
 

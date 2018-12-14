@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using SwissBank.Data.Models;
+using SwissBank.Services;
 
 namespace SwissBank.Areas.Identity.Pages.Account
 {
@@ -17,11 +19,13 @@ namespace SwissBank.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
+        private readonly LoggerService _loggerService;
 
-        public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger, LoggerService loggerService)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _loggerService = loggerService;
         }
 
         [BindProperty]
@@ -75,6 +79,7 @@ namespace SwissBank.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
+                    _loggerService.Add("User logged in.", Input.Email);
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
@@ -84,6 +89,7 @@ namespace SwissBank.Areas.Identity.Pages.Account
                 if (result.IsLockedOut)
                 {
                     _logger.LogWarning("User account locked out.");
+                    _loggerService.Add("User account locked out.", Input.Email);
                     return RedirectToPage("./Lockout");
                 }
                 else

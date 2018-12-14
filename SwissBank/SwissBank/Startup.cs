@@ -88,6 +88,7 @@ namespace SwissBank
             );
 
             services.AddScoped<UserService>();
+            services.AddScoped<LoggerService>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }

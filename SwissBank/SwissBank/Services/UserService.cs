@@ -24,10 +24,9 @@ namespace SwissBank.Services
             _context = context;
         }
 
-        public async Task<User> GetCurrentIdentityUser()
+        public User GetCurrentIdentityUser()
         {
-            var user = (User) await _userManager.FindByIdAsync(GetCurrentUserId());
-            return user;
+            return (User) _userManager.FindByIdAsync(GetCurrentUserId()).Result;
         }
 
         public string GetCurrentUserId()

@@ -21,15 +21,15 @@ namespace SwissBank.Controllers
         private readonly UserService _userService;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ApplicationDbContext _context;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly LoggerService _loggerService;
         private readonly ILogger<LoginWith2faModel> _logger;
 
-        public TransactionsController(UserService userService, UserManager<IdentityUser> userManager, ApplicationDbContext context, SignInManager<IdentityUser> signInManager, ILogger<LoginWith2faModel> logger)
+        public TransactionsController(UserService userService, UserManager<IdentityUser> userManager, ApplicationDbContext context, LoggerService loggerService, ILogger<LoginWith2faModel> logger)
         {
             _userService = userService;
             _userManager = userManager;
             _context = context;
-            _signInManager = signInManager;
+            _loggerService = loggerService;
             _logger = logger;
         }
 
@@ -63,7 +63,7 @@ namespace SwissBank.Controllers
         // GET: Transactions/Create
         public IActionResult Create()
         {
-            return View(new Transactions() { Sender = _userService.GetCurrentIdentityUser().Result });
+            return View(new Transactions() { Sender = _userService.GetCurrentIdentityUser() });
         }
 
         // POST: Transactions/Create
@@ -71,41 +71,50 @@ namespace SwissBank.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Amount,Reseaver,TwoFactorCode")] Transactions transactions)
+        public async Task<IActionResult> Create([Bind("Id,Amount,Receiver,TwoFactorCode")] Transactions transactions)
         {
             if (!ModelState.IsValid)
             {
                 return View(transactions);
             }
 
-            var user = _userService.GetCurrentIdentityUser().Result;
+            var user = _userService.GetCurrentIdentityUser();
             if (user == null)
             {
-                throw new InvalidOperationException($"Unable to load two-factor authentication user.");
+                _loggerService.Add("Unable to load two-factor authentication user for money transfer to.", transactions.Receiver.Id);
+                ViewBag.Message = "Unable to load two-factor authentication user for money transfer.";
+            }
+
+            if (transactions.Amount > user.Monney)
+            {
+                ViewBag.Message = "Not enough money";
+                return View(transactions);
             }
             
             var result = await _userManager.VerifyTwoFactorTokenAsync(user, new IdentityOptions().Tokens.AuthenticatorTokenProvider, transactions.TwoFactorCode);
 
             if (result)
             {
-                _logger.LogInformation("User with ID '{UserId}' logged in with 2fa.", user.Id);
+                _loggerService.Add("logged in with 2fa for money transfer.", user);
                 transactions.DateTime = DateTime.Now;
-                transactions.Sender = _userService.GetCurrentIdentityUser().Result;
-                transactions.Reseaver = _userService.GetIdentityUserById(transactions.Reseaver.Id);
+                transactions.Sender = user;
+                transactions.Receiver = _userService.GetIdentityUserById(transactions.Receiver.Id);
                 transactions.Sender.Monney = transactions.Sender.Monney - transactions.Amount;
-                transactions.Reseaver.Monney = transactions.Reseaver.Monney + transactions.Amount;
+                transactions.Receiver.Monney = transactions.Receiver.Monney + transactions.Amount;
+                _loggerService.Add(transactions.ToString(), user);
                 _context.Add(transactions);
+                _loggerService.Add(_context.Transactionses.Last().ToString(), user);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             else if (user.LockoutEnabled)
             {
-                _logger.LogWarning("User with ID '{UserId}' account locked out.", user.Id);
+                _loggerService.Add("User with ID account locked out.", user);
                 return RedirectToPage("./Lockout");
             }
             else
             {
-                _logger.LogWarning("Invalid authenticator code entered for user with ID '{UserId}'.", user.Id);
+                _loggerService.Add("Invalid authenticator code entered for user with ID.", user);
                 ModelState.AddModelError(string.Empty, "Invalid authenticator code.");
                 return View(transactions);
             }
